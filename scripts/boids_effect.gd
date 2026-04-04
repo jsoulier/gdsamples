@@ -65,6 +65,7 @@ func _render_callback(_effect_callback_type: int, render_data: RenderData) -> vo
 	_device.draw_list_set_push_constant(draw_list, push.to_byte_array(), push.size() * 4)
 	_device.draw_list_draw(draw_list, false, boids.boid_count)
 	_device.draw_list_end()
+	_device.free_rid(framebuffer)
 
 func _build_render_pipeline(framebuffer_format: int) -> void:
 	if _vertex_array.is_valid():
