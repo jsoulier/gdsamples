@@ -1,5 +1,7 @@
 @tool class_name SVO extends Node3D
 
+static var EMPTY: int = -1
+static var SOLID: int = -2
 static var DEBUG_COLOR: Color = Color(0.2, 0.8, 0.4, 1.0)
 
 @export var scene: Node3D = null
@@ -14,7 +16,7 @@ var _debug_lines: Array[Array] = []
 
 func _new_node() -> int:
 	var index: int = _nodes.size()
-	_nodes.append([-1, -1, -1, -1, -1, -1, -1, -1])
+	_nodes.append([EMPTY, EMPTY, EMPTY, EMPTY, EMPTY, EMPTY, EMPTY, EMPTY])
 	return index
 
 func _enter_tree() -> void:
@@ -26,6 +28,18 @@ func _exit_tree() -> void:
 	if Engine.is_editor_hint():
 		var palette = EditorInterface.get_command_palette()
 		palette.remove_command("svo/build")
+
+func _ready() -> void:
+	_get_debug_lines()
+
+func _process(_delta: float) -> void:
+	if not visible:
+		return
+	if debug_depth >= _debug_lines.size():
+		return
+	var level: Array = _debug_lines[debug_depth]
+	for i in range(level.size() / 2):
+		DebugDraw3D.draw_line(level[i * 2], level[i * 2 + 1], DEBUG_COLOR)
 
 func _build() -> void:
 	print("Building SVO for %s" % scene.name)
@@ -56,7 +70,7 @@ func _build() -> void:
 	if Engine.is_editor_hint():
 		EditorInterface.get_resource_filesystem().scan()
 	print("Built SVO for %s" % scene.name)
-	_debug_build()
+	_get_debug_lines()
 
 func _get_aabbs(node: Node, xform: Transform3D, out: Array[AABB]) -> void:
 	if node is Node3D:
@@ -85,26 +99,23 @@ func _subdivide(aabbs: Array[AABB], index: int, _min: Vector3, size: float, dept
 				break
 			if aabb.intersects(cell):
 				_aabbs.append(aabb)
-		# Solid leaf
 		if is_solid:
-			_nodes[index][slot] = -2
+			_nodes[index][slot] = SOLID
 			continue
-		# Empty leaf
 		if _aabbs.is_empty():
 			continue
-		# Solid leaf at max depth
 		if depth == max_depth - 1:
-			_nodes[index][slot] = -2
+			_nodes[index][slot] = SOLID
 			continue
 		var child_index: int = _new_node()
 		_nodes[index][slot] = child_index
 		_subdivide(_aabbs, child_index, child_min, half, depth + 1)
 		is_solid = true
-		for v in _nodes[child_index]:
-			if v != -2:
+		for node in _nodes[child_index]:
+			if node != SOLID:
 				is_solid = false
 		if is_solid:
-			_nodes[index][slot] = -2
+			_nodes[index][slot] = SOLID
 
 func _export_binary() -> void:
 	var path: String = ProjectSettings.globalize_path(out_data.path_join("svo.bin"))
@@ -134,9 +145,11 @@ func _export_metadata() -> void:
 	file.store_string(JSON.stringify(metadata, "\t"))
 	file.close()
 
-func _debug_build() -> void:
+func _get_debug_lines() -> void:
 	var binary_path: String = out_data.path_join("svo.bin")
 	var metadata_path: String = out_data.path_join("svo.json")
+	if not FileAccess.file_exists(binary_path) or not FileAccess.file_exists(metadata_path):
+		return
 	var metadata_file: FileAccess = FileAccess.open(metadata_path, FileAccess.READ)
 	if metadata_file == null:
 		push_error("Failed to open SVO %s" % metadata_path)
@@ -166,21 +179,24 @@ func _debug_build() -> void:
 		var _min: Vector3 = element[1]
 		var size: float = element[2]
 		var depth: int = element[3]
-		if depth > _max_depth:
-			continue
+		if depth == 0:
+			_add_debug_box(_min, _min + Vector3(size, size, size), 0)
 		var half: float = size * 0.5
 		for slot in range(8):
 			var child_index: int = nodes[index * 8 + slot]
+			if child_index == EMPTY:
+				continue
 			var child_min: Vector3 = _min + Vector3(
 				half if (slot & 1) else 0.0,
 				half if (slot & 2) else 0.0,
 				half if (slot & 4) else 0.0)
-			if child_index == -2:
-				_add_box(child_min, child_min + Vector3(half, half, half), depth)
-			elif child_index >= 0 and depth + 1 <= _max_depth:
+			_add_debug_box(child_min, child_min + Vector3(half, half, half), depth + 1)
+			if child_index != SOLID and depth + 1 < _max_depth:
 				stack.push_back([child_index, child_min, half, depth + 1])
 
-func _add_box(bmin: Vector3, bmax: Vector3, depth: int) -> void:
+func _add_debug_box(bmin: Vector3, bmax: Vector3, depth: int) -> void:
+	if depth >= _debug_lines.size():
+		return
 	var cell: Array[Vector3] = [
 		Vector3(bmin.x, bmin.y, bmin.z),
 		Vector3(bmax.x, bmin.y, bmin.z),
@@ -199,12 +215,3 @@ func _add_box(bmin: Vector3, bmax: Vector3, depth: int) -> void:
 	for edge in EDGES:
 		_debug_lines[depth].append(cell[edge[0]])
 		_debug_lines[depth].append(cell[edge[1]])
-
-func _process(_delta: float) -> void:
-	if not visible:
-		return
-	if debug_depth >= _debug_lines.size():
-		return
-	var level: Array = _debug_lines[debug_depth]
-	for i in range(level.size() / 2):
-		DebugDraw3D.draw_line(level[i * 2], level[i * 2 + 1], DEBUG_COLOR)
