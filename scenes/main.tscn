@@ -1,7 +1,6 @@
 [gd_scene format=3 uid="uid://ck8tllsqxi8mn"]
 
 [ext_resource type="PackedScene" uid="uid://xh1ak7p243yj" path="res://scenes/svo.tscn" id="2_0wfyh"]
-[ext_resource type="PackedScene" uid="uid://pfn1xhfre3mw" path="res://scenes/svo_visualizer.tscn" id="3_sugp2"]
 [ext_resource type="PackedScene" uid="uid://b7rpuc1pgbpor" path="res://scenes/camera.tscn" id="4_jyhfs"]
 [ext_resource type="PackedScene" uid="uid://cw1jn6vdb6gsd" path="res://scenes/boids.tscn" id="4_tbgi4"]
 [ext_resource type="Material" uid="uid://dtt4qifso8woh" path="res://resources/transparent.tres" id="4_tefeu"]
@@ -22,13 +21,7 @@ compositor_effects = Array[CompositorEffect]([null])
 [node name="Svo" parent="." unique_id=1499338561 node_paths=PackedStringArray("scene") instance=ExtResource("2_0wfyh")]
 scene = NodePath("..")
 max_depth = 6
-run_build_on_ready = true
-
-[node name="SvoVisualizer" parent="." unique_id=978600978 node_paths=PackedStringArray("svo") instance=ExtResource("3_sugp2")]
-visible = false
-svo = NodePath("../Svo")
-max_depth = 10
-color = Color(0.2, 0.8, 0.4, 1)
+debug_depth = 1
 
 [node name="Camera" parent="." unique_id=1444014672 instance=ExtResource("4_jyhfs")]
 transform = Transform3D(-4.371139e-08, 0, 1, 0, 1, 0, -1, 0, -4.371139e-08, 25, 5, 0)
