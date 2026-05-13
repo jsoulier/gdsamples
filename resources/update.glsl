@@ -30,15 +30,15 @@ layout(push_constant, std430) uniform Params {
     float separate_weight;
     float delta_time;
     float forward_weight;
-    float svo_root_min_x;
-    float svo_root_min_y;
-    float svo_root_min_z;
-    float svo_root_size;
+    float svo_min_x;
+    float svo_min_y;
+    float svo_min_z;
+    float svo_size;
     float svo_max_depth;
-    float _pad0;
-    float _pad1;
-    float _pad2;
-    float _pad3;
+    float sensor_length;
+    float sensor_count;
+    float collision_weight;
+    float padding0;
 } params;
 
 void main() {

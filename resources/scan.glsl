@@ -1,9 +1,11 @@
 #[compute]
 #version 450
 
-#define FOUND_OCCLUDED 1
-#define FOUND_UNOCCLUDED 2
+#define DEBUG_OCCLUDED 1
+#define DEBUG_UNOCCLUDED 2
 #define GOLDEN_ANGLE 2.39996323
+#define EMPTY -1
+#define SOLID -2
 
 struct Boid {
     vec3 position;
@@ -45,7 +47,7 @@ layout(push_constant, std430) uniform Params {
     float sensor_length;
     float sensor_count;
     float collision_weight;
-    float padding3;
+    float padding0;
 } params;
 
 vec3 steer_towards(vec3 direction, vec3 velocity) {
@@ -86,9 +88,9 @@ bool is_occluded(vec3 position) {
         );
         size = half_size;
         int child = svo.nodes[node_index * 8 + slot];
-        if (child == -2) {
+        if (child == SOLID) {
             return true;
-        } else if (child < 0) {
+        } else if (child == EMPTY) {
             return false;
         } else {
             node_index = child;
@@ -135,7 +137,7 @@ void main() {
         acceleration += steer_towards(avoidance, velocity) * params.separate_weight;
     }
     if (is_occluded(position + forward * params.sensor_length)) {
-        boids[id].flags |= FOUND_OCCLUDED;
+        boids[id].flags |= DEBUG_OCCLUDED;
         vec3 up;
         if (abs(forward.y) < 0.99) {
             up = vec3(0.0, 1.0, 0.0);
@@ -159,7 +161,7 @@ void main() {
         }
         if (found_unoccluded) {
             acceleration += steer_towards(direction, velocity) * params.collision_weight;
-            boids[id].flags |= FOUND_UNOCCLUDED;
+            boids[id].flags |= DEBUG_UNOCCLUDED;
         }
     }
     velocity += acceleration * params.delta_time;

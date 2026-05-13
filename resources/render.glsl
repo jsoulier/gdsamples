@@ -1,8 +1,9 @@
 #[vertex]
 #version 450
 
-#define FOUND_OCCLUDED 1
-#define FOUND_UNOCCLUDED 2
+#define DEBUG_OCCLUDED 1
+#define DEBUG_UNOCCLUDED 2
+#define DEBUG 0
 
 struct Boid {
     vec3 position;
@@ -26,7 +27,7 @@ layout(push_constant, std430) uniform Params {
 } params;
 layout(location = 0) out vec3 out_color;
 
-mat3 basis_from_forward(vec3 forward) {
+mat3 get_basis(vec3 forward) {
 	forward = normalize(forward);
 	vec3 up;
 	if (abs(forward.y) < 0.999) {
@@ -43,13 +44,19 @@ void main() {
 	Boid boid = boids[gl_InstanceIndex];
 	vec3 position = boid.position.xyz;
 	vec3 forward = boid.forward.xyz;
-	mat3 basis = basis_from_forward(forward);
+	mat3 basis = get_basis(forward);
 	gl_Position = params.view_proj * vec4(position + basis * in_position, 1.0);
-	if (bool(boid.flags & FOUND_OCCLUDED) && !bool(boid.flags & FOUND_UNOCCLUDED)) {
+#if DEBUG
+	if (bool(boid.flags & DEBUG_UNOCCLUDED)) {
+		out_color = vec3(0.0, 1.0, 0.0);
+	} else if (bool(boid.flags & DEBUG_OCCLUDED)) {
 		out_color = vec3(1.0, 0.0, 0.0);
 	} else {
-		out_color = mix(vec3(1.0, 1.0, 1.0), vec3(0.0, 0.0, 1.0), length(boid.velocity) * 0.4);
+#endif
+		out_color = mix(vec3(1.0, 1.0, 1.0), vec3(0.0, 0.0, 1.0), length(boid.velocity) * 0.25);
+#if DEBUG
 	}
+#endif
 }
 
 #[fragment]

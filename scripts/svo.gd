@@ -145,7 +145,7 @@ func _export_metadata() -> void:
 	file.store_string(JSON.stringify(metadata, "\t"))
 	file.close()
 
-func get_svo_binary() -> PackedByteArray:
+func get_binary() -> PackedByteArray:
 	var path: String = out_data.path_join("svo.bin")
 	if not FileAccess.file_exists(path):
 		return PackedByteArray()
@@ -156,7 +156,7 @@ func get_svo_binary() -> PackedByteArray:
 	file.close()
 	return data
 
-func get_svo_metadata() -> Dictionary:
+func get_metadata() -> Dictionary:
 	var path: String = out_data.path_join("svo.json")
 	if not FileAccess.file_exists(path):
 		return {}
@@ -168,10 +168,10 @@ func get_svo_metadata() -> Dictionary:
 	return JSON.parse_string(content)
 
 func _get_debug_lines() -> void:
-	var metadata: Dictionary = get_svo_metadata()
+	var metadata: Dictionary = get_metadata()
 	if metadata.is_empty():
 		return
-	var bytes: PackedByteArray = get_svo_binary()
+	var bytes: PackedByteArray = get_binary()
 	if bytes.is_empty():
 		return
 	var root_min: Vector3 = Vector3(metadata.root_min_x, metadata.root_min_y, metadata.root_min_z)

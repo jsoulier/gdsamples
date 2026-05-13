@@ -47,11 +47,11 @@ func _ready() -> void:
 		boid_data[base + 6] = forward.z
 		boid_data[base + 7] = 0.0
 	_boid_buffer = _device.storage_buffer_create(boid_data.size() * 4, boid_data.to_byte_array())
-	_svo_metadata = svo.get_svo_metadata()
+	_svo_metadata = svo.get_metadata()
 	if _svo_metadata.is_empty():
 		push_error("Failed to load SVO metadata")
 		return
-	var bytes: PackedByteArray = svo.get_svo_binary()
+	var bytes: PackedByteArray = svo.get_binary()
 	if bytes.is_empty():
 		push_error("Failed to load SVO binary")
 		return
