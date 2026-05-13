@@ -98,11 +98,11 @@ func _process(delta: float) -> void:
 	push[8] = separate_weight
 	push[9] = delta
 	push[10] = forward_weight
-	push[11] = float(_svo_metadata.root_min_x)
-	push[12] = float(_svo_metadata.root_min_y)
-	push[13] = float(_svo_metadata.root_min_z)
-	push[14] = float(_svo_metadata.root_size)
-	push[15] = float(_svo_metadata.max_build_depth)
+	push[11] = float(_svo_metadata.min_x)
+	push[12] = float(_svo_metadata.min_y)
+	push[13] = float(_svo_metadata.min_z)
+	push[14] = float(_svo_metadata.size)
+	push[15] = float(_svo_metadata.depth)
 	push[16] = sensor_length
 	push[17] = float(sensor_count)
 	push[18] = collision_weight

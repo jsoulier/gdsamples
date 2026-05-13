@@ -130,12 +130,11 @@ func _export_binary() -> void:
 
 func _export_metadata() -> void:
 	var metadata: Dictionary = {
-		"root_min_x": _origin.x,
-		"root_min_y": _origin.y,
-		"root_min_z": _origin.z,
-		"root_size": _size,
-		"max_build_depth": max_build_depth,
-		"node_count": _nodes.size(),
+		"min_x": _origin.x,
+		"min_y": _origin.y,
+		"min_z": _origin.z,
+		"size": _size,
+		"depth": max_build_depth,
 	}
 	var path: String = ProjectSettings.globalize_path(out_data.path_join("svo.json"))
 	var file: FileAccess = FileAccess.open(path, FileAccess.WRITE)
@@ -174,19 +173,19 @@ func _get_debug_lines() -> void:
 	var bytes: PackedByteArray = get_binary()
 	if bytes.is_empty():
 		return
-	var root_min: Vector3 = Vector3(metadata.root_min_x, metadata.root_min_y, metadata.root_min_z)
-	var root_size: float = float(metadata.root_size)
-	var max_depth: int = int(metadata.max_build_depth)
+	var _min: Vector3 = Vector3(metadata.min_x, metadata.min_y, metadata.min_z)
+	var size: float = float(metadata.size)
+	var max_depth: int = int(metadata.depth)
 	var nodes: PackedInt32Array = bytes.to_int32_array()
 	_debug_lines.resize(max_depth + 1)
 	for depth in range(max_depth + 1):
 		_debug_lines[depth] = []
-	var stack: Array = [[0, root_min, root_size, 0]]
+	var stack: Array = [[0, _min, size, 0]]
 	while not stack.is_empty():
 		var element: Array = stack.pop_back()
 		var index: int = element[0]
-		var _min: Vector3 = element[1]
-		var size: float = element[2]
+		_min = element[1]
+		size = element[2]
 		var depth: int = element[3]
 		if depth == 0:
 			_add_debug_box(_min, _min + Vector3(size, size, size), 0)

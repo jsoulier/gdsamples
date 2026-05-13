@@ -21,7 +21,7 @@ compositor_effects = Array[CompositorEffect]([null])
 [node name="Svo" parent="." unique_id=1499338561 node_paths=PackedStringArray("scene") instance=ExtResource("2_0wfyh")]
 visible = false
 scene = NodePath("..")
-debug_depth = 4
+debug_depth = 5
 
 [node name="Camera" parent="." unique_id=1444014672 instance=ExtResource("4_jyhfs")]
 transform = Transform3D(-4.371139e-08, 0, 1, 0, 1, 0, -1, 0, -4.371139e-08, 25, 5, 0)
